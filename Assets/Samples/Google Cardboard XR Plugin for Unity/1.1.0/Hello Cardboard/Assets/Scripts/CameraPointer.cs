@@ -18,7 +18,6 @@
 
 using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 /// <summary>
 /// Sends messages to gazed GameObject.
@@ -26,9 +25,10 @@ using UnityEngine.EventSystems;
 public class CameraPointer : MonoBehaviour
 {
     private const float k_MaxDistance = 10;
+    private float timeToSelect = 3.0f;
     private GameObject m_GazedAtObject = null;
 
-    private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(1f);
+    private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(0.5f);
     private int clickCount;
 
 
@@ -55,10 +55,9 @@ public class CameraPointer : MonoBehaviour
                 // GameObject detected in front of the camera.
                 if (m_GazedAtObject != hit.transform.gameObject)
                 {
+                    onPointerObserver();
                     // New GameObject.
-                    //m_GazedAtObject?.SendMessage("OnPointerExit");
                     m_GazedAtObject = hit.transform.gameObject;
-                    //m_GazedAtObject?.SendMessage("OnPointerEnter");
                 }
             }
         }
@@ -95,12 +94,23 @@ public class CameraPointer : MonoBehaviour
         // Checks for screen touches.
         if (Google.XR.Cardboard.Api.IsTriggerPressed)
         {
-            /* m_GazedAtObject?.SendMessage("OnPointerClick");
-            m_GazedAtObject?.SendMessage("OnPointerClickTeleport"); */
             OnPointerClick();
 
         }
 #endif
+    }
+    //metodo para detectar el tiempo que se mira un objeto
+    private void onPointerObserver()
+    {
+        if (timeToSelect < 0)
+        {
+            timeToSelect=10f;
+        }
+        else
+        {
+            timeToSelect -= Time.deltaTime;
+        }
+
     }
 
     //metodo para detectar el doble click o doble toque
