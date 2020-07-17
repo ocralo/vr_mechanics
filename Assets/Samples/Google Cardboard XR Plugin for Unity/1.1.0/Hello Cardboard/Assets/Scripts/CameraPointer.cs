@@ -16,7 +16,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 /// <summary>
@@ -28,7 +30,7 @@ public class CameraPointer : MonoBehaviour
     private float timeToSelect = 3.0f;
     private GameObject m_GazedAtObject = null;
 
-    private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(0.5f);
+    private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(1);
     private int clickCount;
 
 
@@ -50,52 +52,73 @@ public class CameraPointer : MonoBehaviour
         if (Physics.Raycast(castPoint, out hit, Mathf.Infinity))
         {
             Debug.Log(hit.transform.tag);
-            if (hit.transform.tag == "interactive")
+
+            // GameObject detected in front of the camera.
+            if (m_GazedAtObject != hit.transform.gameObject)
             {
-                // GameObject detected in front of the camera.
-                if (m_GazedAtObject != hit.transform.gameObject)
+                switch (hit.transform.tag)
                 {
-                    onPointerObserver();
-                    // New GameObject.
-                    m_GazedAtObject = hit.transform.gameObject;
-                }
-            }
-        }
-        if (Input.GetMouseButtonDown(0))
-        {
-            OnPointerClick();
-        }
-#endif
-
-
-#if UNITY_ANDROID
-
-        if (Physics.Raycast(transform.position, transform.forward, out hit, k_MaxDistance))
-        {
-            if (hit.transform.tag == "interactive")
-            {
-                // GameObject detected in front of the camera.
-                if (m_GazedAtObject != hit.transform.gameObject)
-                {
-                    // New GameObject.
-                    m_GazedAtObject?.SendMessage("OnPointerExit");
-                    m_GazedAtObject = hit.transform.gameObject;
-                    m_GazedAtObject?.SendMessage("OnPointerEnter");
+                    case "interactive":
+                        m_GazedAtObject?.SendMessage("OnPointerExit");
+                        m_GazedAtObject = hit.transform.gameObject;
+                        m_GazedAtObject?.SendMessage("OnPointerEnter");
+                        break;
+                    case "areaObject":
+                        m_GazedAtObject?.SendMessage("OnPointerExit");
+                        m_GazedAtObject = hit.transform.gameObject;
+                        m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
         else
         {
+            m_GazedAtObject?.SendMessage("OnPointerExit");
+            m_GazedAtObject = null;
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            OnPointerClick(m_GazedAtObject);
+        }
+
+#elif UNITY_ANDROID
+
+        if (Physics.Raycast(transform.position, transform.forward, out hit, k_MaxDistance))
+        {
+
+            // GameObject detected in front of the camera.
+            if (m_GazedAtObject != hit.transform.gameObject)
+            {
+                switch (hit.transform.tag)
+                {
+                    case "interactive":
+                        m_GazedAtObject?.SendMessage("OnPointerExit");
+                        m_GazedAtObject = hit.transform.gameObject;
+                        m_GazedAtObject?.SendMessage("OnPointerEnter");
+                        break;
+                    case "areaObject":
+                        m_GazedAtObject?.SendMessage("OnPointerExit");
+                        m_GazedAtObject = hit.transform.gameObject;
+                        m_GazedAtObject?.SendMessage("OnPointerEnter", hit.transform);
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+        }else
+        {
             // No GameObject detected in front of the camera.
             m_GazedAtObject?.SendMessage("OnPointerExit");
             m_GazedAtObject = null;
         }
-
-        // Checks for screen touches.
+            // Checks for screen touches.
         if (Google.XR.Cardboard.Api.IsTriggerPressed)
         {
-            OnPointerClick();
-
+            OnPointerClick(m_GazedAtObject);
+            m_GazedAtObject = null;
         }
 #endif
     }
@@ -104,7 +127,7 @@ public class CameraPointer : MonoBehaviour
     {
         if (timeToSelect < 0)
         {
-            timeToSelect=10f;
+            timeToSelect = 10f;
         }
         else
         {
@@ -114,19 +137,47 @@ public class CameraPointer : MonoBehaviour
     }
 
     //metodo para detectar el doble click o doble toque
-    private void OnPointerClick()
+    private void OnPointerClick([Optional] GameObject hit)
     {
         clickCount++;
         if (clickCount == 2)
         {
+            switch (hit.transform.tag)
+            {
+                case "interactive":
+                    m_GazedAtObject?.SendMessage("teleportPlayer");
+                    break;
+                case "areaObject":
+                    m_GazedAtObject?.SendMessage("OnPointerEnterDoubleClick", hit.transform);
+                    break;
+                default:
+                    break;
+
+            }
             print("double click!");
-            m_GazedAtObject?.SendMessage("OnPointerClickTeleport");
             clickCount = 0;
         }
         else
         {
             StartCoroutine(TickDown());
+            switch (hit.transform.tag)
+            {
+                case "interactive":
+                    //m_GazedAtObject?.SendMessage("OnPointerEnterClik", hit.transform);
+                    break;
+                case "areaObject":
+                    m_GazedAtObject?.SendMessage("OnPointerEnterClik", hit.transform);
+                    break;
+                default:
+                    break;
+
+            }
+            print("click!");
         }
+        /* else
+        {
+            StartCoroutine(TickDown());
+        } */
     }
 
     private IEnumerator TickDown()
