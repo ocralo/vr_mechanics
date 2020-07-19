@@ -5,7 +5,7 @@ using UnityEngine;
 public class AreaPiece : MonoBehaviour
 {
 
-    private int yRotation = 90;
+    private int yRotation = 0;
 
     /// <summary>
     /// Start is called before the first frame update.
@@ -22,6 +22,7 @@ public class AreaPiece : MonoBehaviour
     {
         Debug.Log(parent);
         this.transform.SetParent(parent);
+        this.transform.localPosition = new Vector3(0, 0, 10);
         this.GetComponent<Rigidbody>().useGravity = false;
         //SetMaterial(true);
     }
@@ -34,6 +35,8 @@ public class AreaPiece : MonoBehaviour
         Debug.Log("a rotar");
         yRotation += 90;
         transform.rotation = Quaternion.Euler(0, yRotation, 0);
+        if (yRotation > 360)
+            yRotation = 0;
 
         //SetMaterial(true);
     }
@@ -44,7 +47,6 @@ public class AreaPiece : MonoBehaviour
     public void OnPointerEnterDoubleClick(Transform position)
     {
         Debug.Log(position);
-        //this.transform.position = new Vector3(position.x, position.y, this.transform.position.z);
         this.transform.SetParent(null);
         this.GetComponent<Rigidbody>().useGravity = true;
         //SetMaterial(true);
@@ -55,6 +57,7 @@ public class AreaPiece : MonoBehaviour
     /// </summary>
     public void OnPointerExit()
     {
+        //this.GetComponent<Rigidbody>().useGravity = true;
         //SetMaterial(false);
     }
 

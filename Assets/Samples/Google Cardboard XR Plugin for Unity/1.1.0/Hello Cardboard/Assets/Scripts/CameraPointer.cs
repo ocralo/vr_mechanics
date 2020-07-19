@@ -27,7 +27,9 @@ using UnityEngine;
 public class CameraPointer : MonoBehaviour
 {
     private const float k_MaxDistance = 10;
-    private float timeToSelect = 3.0f;
+    public float timeToSelect = 3.0f;
+    public float timeToSelectFinal = 3.0f;
+    public bool selecObj;
     private GameObject m_GazedAtObject = null;
 
     private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(1);
@@ -56,6 +58,7 @@ public class CameraPointer : MonoBehaviour
             // GameObject detected in front of the camera.
             if (m_GazedAtObject != hit.transform.gameObject)
             {
+                onPointerObserver();
                 switch (hit.transform.tag)
                 {
                     case "interactive":
@@ -66,7 +69,8 @@ public class CameraPointer : MonoBehaviour
                     case "areaObject":
                         m_GazedAtObject?.SendMessage("OnPointerExit");
                         m_GazedAtObject = hit.transform.gameObject;
-                        m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
+                        if (selecObj)
+                            m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
                         break;
                     default:
                         break;
@@ -81,6 +85,7 @@ public class CameraPointer : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             OnPointerClick(m_GazedAtObject);
+            m_GazedAtObject = null;
         }
 
 #elif UNITY_ANDROID
@@ -91,6 +96,7 @@ public class CameraPointer : MonoBehaviour
             // GameObject detected in front of the camera.
             if (m_GazedAtObject != hit.transform.gameObject)
             {
+                onPointerObserver();
                 switch (hit.transform.tag)
                 {
                     case "interactive":
@@ -101,7 +107,8 @@ public class CameraPointer : MonoBehaviour
                     case "areaObject":
                         m_GazedAtObject?.SendMessage("OnPointerExit");
                         m_GazedAtObject = hit.transform.gameObject;
-                        m_GazedAtObject?.SendMessage("OnPointerEnter", hit.transform);
+                        if (selecObj)
+                            m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
                         break;
                     default:
                         break;
@@ -127,7 +134,7 @@ public class CameraPointer : MonoBehaviour
     {
         if (timeToSelect < 0)
         {
-            timeToSelect = 10f;
+            selecObj = true;
         }
         else
         {
@@ -142,13 +149,15 @@ public class CameraPointer : MonoBehaviour
         clickCount++;
         if (clickCount == 2)
         {
-            switch (hit.transform.tag)
+            switch (m_GazedAtObject.transform.tag)
             {
                 case "interactive":
                     m_GazedAtObject?.SendMessage("teleportPlayer");
                     break;
                 case "areaObject":
                     m_GazedAtObject?.SendMessage("OnPointerEnterDoubleClick", hit.transform);
+                    selecObj = !selecObj;
+                    timeToSelect = timeToSelectFinal;
                     break;
                 default:
                     break;
@@ -160,13 +169,13 @@ public class CameraPointer : MonoBehaviour
         else
         {
             StartCoroutine(TickDown());
-            switch (hit.transform.tag)
+            switch (m_GazedAtObject.transform.tag)
             {
                 case "interactive":
                     //m_GazedAtObject?.SendMessage("OnPointerEnterClik", hit.transform);
                     break;
                 case "areaObject":
-                    m_GazedAtObject?.SendMessage("OnPointerEnterClik", hit.transform);
+                    m_GazedAtObject?.SendMessage("OnPointerEnterClik", m_GazedAtObject.transform);
                     break;
                 default:
                     break;
