@@ -44,9 +44,8 @@ public class AreaPiece : MonoBehaviour
     /// <summary>
     /// This method is called by the Main Camera when it starts gazing at this GameObject.
     /// </summary>
-    public void OnPointerEnterDoubleClick(Transform position)
+    public void OnPointerEnterDoubleClick()
     {
-        Debug.Log(position);
         this.transform.SetParent(null);
         this.GetComponent<Rigidbody>().useGravity = true;
         //SetMaterial(true);

@@ -6,14 +6,14 @@ using UnityEngine.SceneManagement;
 
 public class changeScene : MonoBehaviour
 {
-
-    public List<string> Scenes;
-    public Slider slider;
-    public GameObject canvas;
+    public Scrollbar slider;
+    public GameObject canvasCharge;
+    public GameObject canvasInit;
 
     public void ViewLoadScene(int i)
     {
-        canvas.SetActive(true);
+        canvasInit.SetActive(false);
+        canvasCharge.SetActive(true);
         StartCoroutine(LoadYourAsyncScene(i));
     }
     IEnumerator LoadYourAsyncScene(int i)
@@ -23,12 +23,12 @@ public class changeScene : MonoBehaviour
         // You could also load the Scene by using sceneBuildIndex. In this case Scene2 has
         // a sceneBuildIndex of 1 as shown in Build Settings.
 
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(Scenes[i]);
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(i);
 
         // Wait until the asynchronous scene fully loads
         while (!asyncLoad.isDone)
         {
-            slider.value = asyncLoad.progress;
+            slider.size = asyncLoad.progress;
             yield return null;
         }
     }

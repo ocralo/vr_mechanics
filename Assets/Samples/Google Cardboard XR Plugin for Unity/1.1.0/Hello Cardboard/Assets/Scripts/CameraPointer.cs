@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.XR.Management;
 
 /// <summary>
 /// Sends messages to gazed GameObject.
@@ -29,12 +30,22 @@ public class CameraPointer : MonoBehaviour
     private const float k_MaxDistance = 10;
     public float timeToSelect = 3.0f;
     public float timeToSelectFinal = 3.0f;
-    public bool selecObj;
+    public bool selecObj = true;
     private GameObject m_GazedAtObject = null;
 
     private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(1);
     private int clickCount;
+    public VrManagment vrManagment;
+    public void Start()
+    {
+        StartXR();
+    }
 
+    public void StartXR()
+    {
+        XRGeneralSettings.Instance.Manager.InitializeLoaderSync();
+        XRGeneralSettings.Instance.Manager.StartSubsystems();
+    }
 
     /// <summary>
     /// Update is called once per frame.
@@ -58,19 +69,37 @@ public class CameraPointer : MonoBehaviour
             // GameObject detected in front of the camera.
             if (m_GazedAtObject != hit.transform.gameObject)
             {
-                onPointerObserver();
                 switch (hit.transform.tag)
                 {
                     case "interactive":
                         m_GazedAtObject?.SendMessage("OnPointerExit");
                         m_GazedAtObject = hit.transform.gameObject;
-                        m_GazedAtObject?.SendMessage("OnPointerEnter");
                         break;
                     case "areaObject":
                         m_GazedAtObject?.SendMessage("OnPointerExit");
                         m_GazedAtObject = hit.transform.gameObject;
+
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                if (!selecObj)
+                {
+                    onPointerObserver();
+                }
+                switch (hit.transform.tag)
+                {
+                    case "interactive":
+                        m_GazedAtObject?.SendMessage("OnPointerEnter");
+                        break;
+                    case "areaObject":
                         if (selecObj)
+                        {
                             m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
+                        }
                         break;
                     default:
                         break;
@@ -107,13 +136,32 @@ public class CameraPointer : MonoBehaviour
                     case "areaObject":
                         m_GazedAtObject?.SendMessage("OnPointerExit");
                         m_GazedAtObject = hit.transform.gameObject;
-                        if (selecObj)
-                            m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
                         break;
                     default:
                         break;
 
                 }
+            }else{
+
+                if (!selecObj)
+                {
+                    onPointerObserver();
+                }
+                switch (hit.transform.tag)
+                {
+                    case "interactive":
+                        m_GazedAtObject?.SendMessage("OnPointerEnter");
+                        break;
+                    case "areaObject":
+                        if (selecObj)
+                        {
+                            m_GazedAtObject?.SendMessage("OnPointerEnter", this.transform);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            
             }
         }else
         {
@@ -132,9 +180,11 @@ public class CameraPointer : MonoBehaviour
     //metodo para detectar el tiempo que se mira un objeto
     private void onPointerObserver()
     {
+        Debug.Log(timeToSelect);
         if (timeToSelect < 0)
         {
             selecObj = true;
+            timeToSelect = timeToSelectFinal;
         }
         else
         {
@@ -156,7 +206,7 @@ public class CameraPointer : MonoBehaviour
                     break;
                 case "areaObject":
                     m_GazedAtObject?.SendMessage("OnPointerEnterDoubleClick", hit.transform);
-                    selecObj = !selecObj;
+                    selecObj = false;
                     timeToSelect = timeToSelectFinal;
                     break;
                 default:
@@ -183,10 +233,6 @@ public class CameraPointer : MonoBehaviour
             }
             print("click!");
         }
-        /* else
-        {
-            StartCoroutine(TickDown());
-        } */
     }
 
     private IEnumerator TickDown()
