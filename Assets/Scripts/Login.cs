@@ -10,7 +10,6 @@ using TMPro;
 
 public class Login : changeScene
 {
-    public Button submit;
     public TMP_InputField user;
     public TMP_InputField password;
     public VrManagment vrManagment;
@@ -21,19 +20,20 @@ public class Login : changeScene
         //Google.XR.Cardboard.Widget.CloseButtonRect = false;
         //Screen.orientation = ScreenOrientation.Portrait;
 #if !UNITY_EDITOR
-        //StopXR();
+        StopXR();
+        
 #endif
 
 
     }
 
-    public void StopXR()
+    /* public void StopXR()
     {
         if (XRGeneralSettings.Instance.Manager.isInitializationComplete)
         {
             XRGeneralSettings.Instance.Manager.StopSubsystems();
         }
-    }
+    } */
 
     // Update is called once per frame
     void Update()
@@ -47,22 +47,79 @@ public class Login : changeScene
         XRGeneralSettings.Instance.Manager.activeLoader.Stop();
         XRGeneralSettings.Instance.Manager.activeLoader.Deinitialize();
     }
+    ///////////
+    IEnumerator StartXR()
+    {
+        yield return XRGeneralSettings.Instance.Manager.InitializeLoader();
+        if (XRGeneralSettings.Instance.Manager.activeLoader == null)
+        {
+            Debug.LogError("Initializing XR Failed. Check Editor or Player log for details.");
+        }
+        else
+        {
+            Debug.Log("Starting XR...");
+            XRGeneralSettings.Instance.Manager.StartSubsystems();
+            yield return null;
+        }
+    }
+
+
+    void StopXR()
+    {
+        if (XRGeneralSettings.Instance.Manager.isInitializationComplete)
+        {
+            XRGeneralSettings.Instance.Manager.StopSubsystems();
+            Camera.main.ResetAspect();
+            XRGeneralSettings.Instance.Manager.DeinitializeLoader();
+        }
+    }
+    /////////////
 
     /*  */
     public void Submit()
     {
-        /* submit.onClick.AddListener(() =>
-        {
-            ViewLoadScene(1);
-        }); */
-
         StartCoroutine(LoginRequest(user.text, password.text, json =>
         {
             ResponseQuery rs = JsonUtility.FromJson<ResponseQuery>(json);
             Debug.Log(json);
+            if (rs.auth)
+            {
+                StartXR();
+                CreateGlobalToken(rs.token);
+                ViewLoadScene(1);
+            }
+            else
+            {
+
+            }
             Debug.Log(rs.auth);
         }));
     }
+
+    public void CreateGlobalToken(string token)
+    {
+        GameObject globalData = GameObject.Find("globalData");
+        if (GameObject.Find("globalData") != null)
+        {
+            globalData.GetComponent<GlobalData>().Token = token;
+        }
+        else
+        {
+            GameObject globalDataNew = new GameObject();
+            globalDataNew.name = "globalData";
+            globalDataNew.AddComponent<GlobalData>();
+            globalDataNew.GetComponent<GlobalData>().Token = token;
+            DontDestroyOnLoad(globalDataNew);
+        }
+    }
+
+    /*  */
+
+    /* public void StartXR()
+    {
+        XRGeneralSettings.Instance.Manager.InitializeLoaderSync();
+        XRGeneralSettings.Instance.Manager.StartSubsystems();
+    } */
 
 
     /*  */
@@ -73,14 +130,9 @@ public class Login : changeScene
         WWWForm form = new WWWForm();
         form.AddField("email", email);
         form.AddField("password", password);
-        //string form = "{\"password\":\"" + password + "\", \"email\":\"" + email + "\"}";
-
-        //Debug.Log(form);
 
         UnityWebRequest www = UnityWebRequest.Post(url, form);
-        //www.SetRequestHeader("Content-Type", "multipart/form-data");
-        //www.SetRequestHeader("Content-Type", "application/json");
-        //www.SetRequestHeader("Authorization", "Bearer " + token);
+
         yield return www.SendWebRequest();
 
         if (www.isNetworkError || www.isHttpError)

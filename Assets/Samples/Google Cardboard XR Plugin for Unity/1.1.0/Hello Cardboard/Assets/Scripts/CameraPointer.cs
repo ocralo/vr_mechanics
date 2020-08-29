@@ -38,7 +38,7 @@ public class CameraPointer : MonoBehaviour
     public VrManagment vrManagment;
     public void Start()
     {
-        StartXR();
+        //StartXR();
     }
 
     public void StartXR()
