@@ -36,15 +36,10 @@ public class CameraPointer : MonoBehaviour
     private WaitForSeconds doubleClickTreashHold = new WaitForSeconds(1);
     private int clickCount;
     public VrManagment vrManagment;
-    public void Start()
+    void Start()
     {
         //StartXR();
-    }
-
-    public void StartXR()
-    {
-        XRGeneralSettings.Instance.Manager.InitializeLoaderSync();
-        XRGeneralSettings.Instance.Manager.StartSubsystems();
+        //StartCoroutine(StartXRIe());
     }
 
     /// <summary>

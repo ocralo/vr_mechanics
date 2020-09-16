@@ -14,7 +14,13 @@ public class changeScene : MonoBehaviour
     {
         canvasInit.SetActive(false);
         canvasCharge.SetActive(true);
+        Debug.Log(i);
         StartCoroutine(LoadYourAsyncScene(i));
+    }
+
+    public void DebugP()
+    {
+        Debug.Log("hola guapisimos");
     }
     IEnumerator LoadYourAsyncScene(int i)
     {

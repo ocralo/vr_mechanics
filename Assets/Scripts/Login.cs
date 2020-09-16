@@ -17,65 +17,15 @@ public class Login : changeScene
     // Start is called before the first frame update
     void Start()
     {
-        //Google.XR.Cardboard.Widget.CloseButtonRect = false;
-        //Screen.orientation = ScreenOrientation.Portrait;
-#if !UNITY_EDITOR
-        StopXR();
-        
-#endif
-
 
     }
 
-    /* public void StopXR()
-    {
-        if (XRGeneralSettings.Instance.Manager.isInitializationComplete)
-        {
-            XRGeneralSettings.Instance.Manager.StopSubsystems();
-        }
-    } */
 
     // Update is called once per frame
     void Update()
     {
 
     }
-
-    IEnumerator NoVR()
-    {
-        yield return XRGeneralSettings.Instance.Manager.InitializeLoader();
-        XRGeneralSettings.Instance.Manager.activeLoader.Stop();
-        XRGeneralSettings.Instance.Manager.activeLoader.Deinitialize();
-    }
-    ///////////
-    IEnumerator StartXR()
-    {
-        yield return XRGeneralSettings.Instance.Manager.InitializeLoader();
-        if (XRGeneralSettings.Instance.Manager.activeLoader == null)
-        {
-            Debug.LogError("Initializing XR Failed. Check Editor or Player log for details.");
-        }
-        else
-        {
-            Debug.Log("Starting XR...");
-            XRGeneralSettings.Instance.Manager.StartSubsystems();
-            yield return null;
-        }
-    }
-
-
-    void StopXR()
-    {
-        if (XRGeneralSettings.Instance.Manager.isInitializationComplete)
-        {
-            XRGeneralSettings.Instance.Manager.StopSubsystems();
-            Camera.main.ResetAspect();
-            XRGeneralSettings.Instance.Manager.DeinitializeLoader();
-        }
-    }
-    /////////////
-
-    /*  */
     public void Submit()
     {
         StartCoroutine(LoginRequest(user.text, password.text, json =>
@@ -84,7 +34,6 @@ public class Login : changeScene
             Debug.Log(json);
             if (rs.auth)
             {
-                StartXR();
                 CreateGlobalToken(rs.token);
                 ViewLoadScene(1);
             }
