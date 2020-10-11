@@ -19,10 +19,6 @@ public class ManaggeScene : MonoBehaviour
         socket = Socket.Connect(serverUrl);
     }
 
-    void OnGUI()
-    {
-    }
-
     // Update is called once per frame
     void LateUpdate()
     {
